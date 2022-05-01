@@ -1,0 +1,14 @@
+{
+  "name": "node-bully",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Eh..No..\" && exit 0"
+  },
+  "author": "Shash Perera",
+  "license": "MIT",
+  "dependencies": {
+    "grpc": "^1.0.1"
+  }
+}
