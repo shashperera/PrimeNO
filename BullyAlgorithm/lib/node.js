@@ -31,7 +31,7 @@
              });
              setTimeout(() => {
                  if (node.flags.anyBiggerNodesAlive === false) {
-                     console.log(`i am the king!`.toUpperCase());
+                     console.log(`I am the master!`.toUpperCase());
                      node.currentLeader = node.id;
                      node.peers.forEach((p) => {
                          node.events.emit('COORDINATOR', {
@@ -59,13 +59,13 @@
                          if (node.id == node.currentLeader) {
                              console.log(`hey ${args.sender}, my nodes are loyal to me!`.toUpperCase());
                          } else {
-                             console.log(`so, yeah... thats akward ${args.sender}, I'm gonna go ahead and start a new election`.toUpperCase());
+                             console.log(`Oops ${args.sender}, Starting a new election`.toUpperCase());
                          }
                          node._sendElectionMessage();
                      } else {
                          node.currentLeader = parseInt(args.sender);
                          node.flags.anyBiggerNodesAlive = true;
-                         console.log(`long live node ${args.sender}!`.toUpperCase());
+                         console.log(`New master is ${args.sender}!`.toUpperCase());
                      }
                      break;
                  default:

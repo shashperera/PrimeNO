@@ -26,7 +26,7 @@ if (protocol !== 'http' && protocol !== 'grpc') {
 // run the demo
 initNodes(nodeIds, () => {
     introduceNodes(nodes, () => {
-        console.log(`\n> system up and running with ${nodes.length} nodes, they will now elect a leader \n`.toUpperCase());
+        console.log(`\n> The system is up and running with ${nodes.length} nodes, they will now elect a leader \n`.toUpperCase());
         waitAWhileThenKillTheLeader(() => {
             waitAWhileThenBringTheInitialLeaderBackOnline(() => {
                 waitAWhileThenHaveRogueNodeClaimThrone();
@@ -69,7 +69,7 @@ function initNodes(nodeIds, done, index) {
 
 function waitAWhileThenKillTheLeader(done) {
     setTimeout(() => {
-        console.log('> killing current leader, remaining nodes will elect a new leader\n'.toUpperCase());
+        console.log('> Current leader killed, remaining nodes will elect a new leader\n'.toUpperCase());
         nodes[nodes.length - 1].proc.kill();
         done();
     }, 1000 * nodes.length);
