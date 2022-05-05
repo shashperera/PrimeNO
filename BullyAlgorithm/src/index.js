@@ -2,18 +2,22 @@ const express = require('express');
 const axios = require('axios');
 const Logger = require('./logger');
 
-let coordinatorNode = null;
+let leaderNode = null;
 let isAwaitingNewCoordinator = false;
 
 (async () => {
     const app = express();
     const nodes = getNodes(process.argv);
     const thisNode = nodes[0];
-    const logger = new Logger(process.pid, thisNode);
+
+    // const httpProxy = require('http-proxy');
+    // const apiProxy = httpProxy.createProxyServer();
+
+    const logger = new Logger(process.nid, thisNode);
 
     registerEndpoints(app, nodes, logger);
     setInterval(() => pingCoordinator(nodes, logger), 5000);
-    
+
     app.listen(thisNode.host.port, () => logger.log('Up and listening'));
     startElection(nodes, logger);
 })();
@@ -21,7 +25,7 @@ let isAwaitingNewCoordinator = false;
 function getNodes(args) {
     let nodes = args.slice(2).map(x => {
         let tokens = x.split(':');
-        return { 
+        return {
             key: parseInt(tokens[0]),
             host: new URL(tokens.slice(1).join(':'))
         };
@@ -39,20 +43,21 @@ function registerEndpoints(app, nodes, logger) {
     });
 
     app.get('/victory', (req, res) => {
-        isAwaitingNewCoordinator = false; //Register a service
-        coordinatorNode = nodes.filter(x => x.key == req.query.key)[0];
+        isAwaitingNewCoordinator = false; //Register a node service
+        leaderNode = nodes.filter(x => x.key == req.query.key)[0];
         res.sendStatus(200);
-        logger.log(`Set ${coordinatorNode.host.href} as the new coordinator`);
+        logger.log(`Set ${leaderNode.host.href} as the new leader`);
     });
 }
 
+//Ping and check the coordinator status
 async function pingCoordinator(nodes, logger) {
     try {
-        let url = new URL('/alive', coordinatorNode.host);
+        let url = new URL('/alive', leaderNode.host);
         await axios.get(url.href); //if available continue
-        logger.log(`Coordinator ${coordinatorNode.host.href} is up`);
-    } catch(error) {
-        logger.log(`Coordinator ${coordinatorNode.host.href} is down!`); //if not reelect
+        logger.log(`Coordinator node ${leaderNode.host.href} is up`);
+    } catch (error) {
+        logger.log(`Coordinator node ${leaderNode.host.href} is down!`); //if not re-elect
         startElection(nodes, logger);
     }
 }
@@ -66,15 +71,15 @@ async function startElection(nodes, logger) {
 
     for (candidate of candidates) {
         if (candidate.key === thisNode.key) {
-            logger.log('Declaring self as new coordinator');
+            logger.log('Declaring self as new leader');
 
             await Promise.all(
                 nodes.map(x => {
                     let url = new URL('/victory', x.host);
                     return axios.get(url.href, { params: { key: thisNode.key } });
                 })
-            ).catch(() => {});
-            
+            ).catch(() => { });
+
             break;
         } else {
 
@@ -83,7 +88,7 @@ async function startElection(nodes, logger) {
                 let url = new URL('/election', candidate.host);
                 await axios.get(url.href);
 
-                // if response received, wait for subsequent victory message (but start over if it never comes)
+                // if a response is received, wait for subsequent victory message (but start over if it never comes)
                 setTimeout(() => {
                     if (isAwaitingNewCoordinator) {
                         startElection();
@@ -92,7 +97,7 @@ async function startElection(nodes, logger) {
 
                 break;
             } catch (error) {
-                console.log("Error",error)
+                console.log("Error", error)
             }
 
         }
