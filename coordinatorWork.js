@@ -46,6 +46,7 @@ function read_number_from_file(){
     return random_number
 }
 
+//Check prime number
 var isPrimeNumber = function (number) {
     if (number == 1 || number == 2) {
         return true;
@@ -60,4 +61,6 @@ var isPrimeNumber = function (number) {
 }
 // console.log(isPrimeNumber(10));
 // console.log(isPrimeNumber(random_number));
+
+
 

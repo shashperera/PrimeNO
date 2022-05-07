@@ -4,7 +4,7 @@ const Monotonic = require('./monotonic')
 // import requests
 
 
-function get_learner_from_service_registry() {
+function getLearnerServiceregistry() {
     learner_array = {};
     response = requests.get('http://127.0.0.1:8500/dc1/services');
     nodes = response.json();
@@ -22,7 +22,7 @@ function get_learner_from_service_registry() {
     })
     print('learner_array', learner_array);
     learner_array.forEach(element => {
-        url = 'http://localhost:$learner_array[each]/finalResult')
-    return url;
+        url = 'http://localhost:${learner_array[each]/finalResult}'});
+    return url
 }
 module.exports = Acceptor
