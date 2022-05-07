@@ -21,6 +21,7 @@ let isAwaitingNewCoordinator = false;
     registerNodeEndpoints(app, nodes, logger);
     setInterval(() => pingCoordinator(nodes, logger), 5000);
 
+    
     app.listen(thisNode.host.port, () => logger.log('Node up and listening'));
     startElection(nodes, logger);
 })();

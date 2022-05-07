@@ -16,7 +16,7 @@ class ConsulConfig {
         this.consul.agent.service.register({
             name: serviceName,
             Address: '127.0.0.1', // Note:127.0.0.1 is the localhost
-            port: port,
+            port: 3000,
             check: {
                 name:serviceName,
                 http: 'http://${Address}:${port}/health',
