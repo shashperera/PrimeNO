@@ -1,23 +1,25 @@
 const Consul = require('consul');
 
 class ConsulConfig {
-    constructor() {
-        const serviceName = 'consul-serviceRegistry';
-
+    constructor(serviceName) {
+        console.log("Start consul");
         //Initialize consumer
         this.consul = new Consul({
-            host: '192.168.6.128',
+            name:"Node 01",
+            host: '127.0.0.1',
             port: 8500,
             promisify: true,
         });
+    // const id = `${Address}-${hostname}-${serviceIdentity}-${port}`;
 
-        //Service registration and health check configuration
+        //Service registration and health check configuration in service registry
         this.consul.agent.service.register({
             name: serviceName,
-            Address: '192.168.20.193', // Note: 192.168.20.193 is my local intranet IP, which can be viewed through ifconfig
-            port: 3000,
+            Address: '127.0.0.1', // Note:127.0.0.1 is the localhost
+            port: port,
             check: {
-                http: 'http://192.168.20.193:3000/health',
+                name:serviceName,
+                http: 'http://${Address}:${port}/health',
                 interval: '10s',
                 timeout: '5s',
             }
@@ -27,7 +29,7 @@ class ConsulConfig {
                 throw err;
             }
 
-            Console.log(servicename + "registered successfully!");
+            Console.log(serviceName + "registered successfully!");
         }
     }
 

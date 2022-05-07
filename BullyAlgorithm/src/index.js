@@ -1,6 +1,9 @@
 const express = require('express');
 const axios = require('axios');
 const Logger = require('./logger');
+const ConsulConfig = require('./consul');
+// const random = require('random-int');
+const crypto = require("crypto");
 
 let coordinatorNode = null;
 let isAwaitingNewCoordinator = false;
@@ -9,15 +12,15 @@ let isAwaitingNewCoordinator = false;
     const app = express();
     const nodes = getNodes(process.argv);
     const thisNode = nodes[0];
-    
+
     // const httpProxy = require('http-proxy');
     // const apiProxy = httpProxy.createProxyServer();
 
     const logger = new Logger(process.pid, thisNode);
 
-    registerEndpoints(app, nodes, logger);
+    registerNodeEndpoints(app, nodes, logger);
     setInterval(() => pingCoordinator(nodes, logger), 5000);
-    
+
     app.listen(thisNode.host.port, () => logger.log('Node up and listening'));
     startElection(nodes, logger);
 })();
@@ -25,12 +28,9 @@ let isAwaitingNewCoordinator = false;
 //Get the Node, Node ID
 function getNodes(args) {
     let nodes = args.slice(2).map(x => {
-        // const id = 0;
-        // console.log('x: ',x)
-        // let tokens = new Date().getUTCMilliseconds() + random(id); //generate a random unique number for Node ID
-        // console.log('tokens: ',tokens)
+
         let tokens = x.split(':');
-        return { 
+        return {
             key: parseInt(tokens[0]),
             host: new URL(tokens.slice(1).join(':'))
         };
@@ -40,7 +40,13 @@ function getNodes(args) {
 }
 
 //APIs to check,start and select the leader.
-function registerEndpoints(app, nodes, logger) {
+function registerNodeEndpoints(app, nodes, logger) {
+    // const id = 0;
+
+
+    const nodeID = new Date().getUTCMilliseconds() + crypto.randomInt(10);
+    const consul = new ConsulConfig("Paxos "+nodeID+"");
+
     //Checking the status of candidates
     app.get('/alive', (req, res) => res.sendStatus(200));
 
@@ -65,7 +71,7 @@ async function pingCoordinator(nodes, logger) {
         let url = new URL('/alive', coordinatorNode.host);
         await axios.get(url.href);//if available continue
         logger.log(`Coordinator ${coordinatorNode.host.href} is up`);
-    } catch(error) {
+    } catch (error) {
         logger.log(`Coordinator ${coordinatorNode.host.href} is down!`);//if not re-elect
         startElection(nodes, logger);
     }
@@ -89,8 +95,8 @@ async function startElection(nodes, logger) {
                     let url = new URL('/winner', x.host);
                     return axios.get(url.href, { params: { key: thisNode.key } });
                 })
-            ).catch(() => {});
-            
+            ).catch(() => { });
+
             break;
             //If there is no winner re-elect
             // 1) Check the hosts
@@ -110,7 +116,18 @@ async function startElection(nodes, logger) {
 
                 break;
             } catch (error) {
-                //  console.log("Error");
+            //     if (error.response) {
+            //         //response status is an error code
+            //         console.log(error.response.status);
+            //     }
+            //     else if (error.request) {
+            //         //response not received though the request was sent
+            //         console.log(error.request);
+            //     }
+            //     else {
+            //         //an error occurred when setting up the request
+            //         console.log(error.message);
+            //     }
             }
 
         }

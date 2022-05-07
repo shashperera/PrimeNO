@@ -1,66 +1,28 @@
 const Recorder = require('./recorder')
 const Monotonic = require('./monotonic')
 
-class Acceptor {
-    constructor (paxos) {
-        this.register = paxos._writer.register || {
-            body: paxos.top.body,
-            previous: null
-        }
-        this.promise = paxos.top.body.promise
-        this._paxos = paxos
-    }
+// import requests
 
-    request (now, message) {
-        switch (message.method) {
-        case 'prepare':
-            if (Monotonic.compare(this.promise, message.promise) < 0) {
-                this.promise = message.promise
-                return {
-                    method: 'promise',
-                    promise: this.promise,
-                    register: this.register
-                }
-            }
-            break
-        case 'accept':
-            if (Monotonic.compare(this.promise, message.body.promise) == 0) {
-                const register = {
-                    body: message.body,
-                    previous: message.previous
-                }
-                this.register = register
-                this.promise = register.body.promise
-                return { method: 'accepted', promise: this.promise }
-            }
-            break
-        }
-        return { method: 'reject', promise: this.promise }
-    }
 
-    createRecorder (promise) {
-        const entries = []
-        let register = this.register
-        while (register) {
-            entries.push(register.body)
-            register = register.previous
-        }
+function get_learner_from_service_registry() {
+    learner_array = {};
+    response = requests.get('http://127.0.0.1:8500/dc1/services');
+    nodes = response.json();
 
-        entries.reverse()
-
-        for (let i = 1, I = entries.length - 1; i < I; i++) {
-            if (entries[i].promise == promise) {
-                return this
+    nodes.forEach(element => {
+        if (length(nodes[each]['Meta']) > 0) {
+            if (nodes[each]['Meta']['Role'] == 'Learner') {
+                node = nodes[each]['Service'];
+                role = nodes[each]['Port'];
+                key = node;
+                value = role;
+                learner_array[key] = value;
             }
         }
-
-        // TODO Does it matter if the promise is off? Or only register contents?
-        return new Recorder(this._paxos)
-    }
-
-    inspect () {
-        return { type: 'Acceptor', register: this.register }
-    }
+    })
+    print('learner_array', learner_array);
+    learner_array.forEach(element => {
+        url = 'http://localhost:$learner_array[each]/finalResult')
+    return url;
 }
-
 module.exports = Acceptor
