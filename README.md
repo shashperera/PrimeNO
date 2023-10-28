@@ -7,7 +7,7 @@ The bully algorithm is a method for dynamically electing a coordinator or leader
 #### cd BullyAlgorithm
 #### npm test
 
-2) Paxos Consensus - Prime Number Detection
+### 2) Paxos Consensus - Prime Number Detection
 #### To run consul 
 #####  consul agent -dev
 
